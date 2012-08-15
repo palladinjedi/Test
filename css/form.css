@@ -1,0 +1,27 @@
+/*
+	Checkboxes
+*/
+.outtaHere {
+	position:absolute;
+	left:-3000px;
+}
+/*Radio buttons*/
+.radioArea, .radioAreaChecked {
+	float:left;
+	width:16px !important;
+	height:16px;
+	background: url(../images/bg-radio.gif) no-repeat;
+	overflow: hidden;
+	margin: 0;
+}
+.radioAreaChecked {background-position: 0 -16px;}
+/*Checkboxes*/
+.checkboxArea, .checkboxAreaChecked {
+	float:left;
+	width:18px !important;
+	height:19px;
+	overflow: hidden;
+	background: url(../images/sprite01.png) no-repeat -48px -347px;
+	margin:2px 14px 0 0;
+}
+.checkboxAreaChecked {background-position: -91px -347px;}

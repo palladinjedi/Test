@@ -1,0 +1,6 @@
+.popup-holder .bg {
+	filter: alpha(opacity=60);
+	-moz-opacity: 0.6;
+	opacity: 0.6;
+	background:#000;
+}
