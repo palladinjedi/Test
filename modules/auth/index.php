@@ -69,7 +69,11 @@ if (!isset($configuration_file)) {
 
 //echo $_GET['network'];
 //var_dump($_GET);
+
+
 switch ($_GET['network']) {
+
+    /* Авторизация Facebook */
     case "facebook":
         //$uid = $Auth -> FbAuth();
 
@@ -78,7 +82,6 @@ switch ($_GET['network']) {
         $app_secret = "4703039bf1fc3786a303347b2f5fb3c1";
         $my_url = "http://life.seazo.net/auth?network=facebook";
 
-        //session_start();
         $code = $_REQUEST["code"];
 
         if (empty($code)) {
@@ -106,7 +109,8 @@ switch ($_GET['network']) {
             //echo("Hello " . $user->name);
 
             var_dump($user);
-            /* ----------------------------------------------- */
+
+            /* Проверка пользователя в базе */
             $identity = $user->link;
             $user_network = "facebook";
 
@@ -148,45 +152,15 @@ switch ($_GET['network']) {
             //echo("The state does not match. You may be a victim of CSRF.");
         }
 
-
-
-
         break;
+
+
+        /* Авторизация через Twitter */
     case "twitter":
 
         require_once('./modules/auth/twitteroauth/twitteroauth.php');
         require_once('./modules/auth/twitteroauth/tw-config.php');
-
-        /*    $connection = new TwitterOAuth(CONSUMER_KEY, CONSUMER_SECRET);
-
-          $_SESSION['oauth_token'] = $token = $request_token['oauth_token'];
-          $_SESSION['oauth_token_secret'] = $request_token['oauth_token_secret'];
-
-          $url = $connection->getAuthorizeURL($token);
-
-          if (isset($_REQUEST['oauth_token']) && $_SESSION['oauth_token'] !== $_REQUEST['oauth_token']) {
-          $_SESSION['oauth_status'] = 'oldtoken';
-          //header('Location: ./clearsessions.php');
-          session_destroy();
-          header('Location: /auth?network=twitter');
-          }
-
-          $connection = new TwitterOAuth(CONSUMER_KEY, CONSUMER_SECRET, $_SESSION['oauth_token'], $_SESSION['oauth_token_secret']);
-
-          $access_token = $connection->getAccessToken($_REQUEST['oauth_verifier']);
-          $_SESSION['access_token'] = $access_token;
-
-          unset($_SESSION['oauth_token']);
-          unset($_SESSION['oauth_token_secret']);
-
-          $connection = new TwitterOAuth(CONSUMER_KEY, CONSUMER_SECRET, $access_token['oauth_token'], $access_token['oauth_token_secret']);
-
-          $content_user = $connection->get('account/verify_credentials');
-          $array_user = (array)$content_user;
-          $user_id=$array_user["id"];
-
-         */
-
+        
         function getConnectionWithAccessToken($oauth_token, $oauth_token_secret) {
 
             $connection = new TwitterOAuth('uG2BQMcu0VXTOJ7Exv7zA', 'W9qN57LxvrKLvULDLW9CBZ1W2alCFeC42R4Cqdv4u8', $oauth_token, $oauth_token_secret);
@@ -202,15 +176,14 @@ switch ($_GET['network']) {
 
         $user_network = "twitter";
 
-        $identity = "https://twitter.com/" . $content->url;
+        $identity = "https://twitter.com/" . $content->screen_name;
 
         $user = explode(" ", iconv("UTF-8", "WINDOWS-1251", trim(strip_tags($content->name))));
 
         $user['first_name'] = $user[0];
         $user['last_name'] = $user[1];
-
-        //var_dump($user);
-        /* ----------------------------------------------- */
+        
+        /* Проверка пользователя в базе */
 
         $uid = $DB->GetValues($config['dbprefix'] . 'user', 'uid, ban', "identity='" . $identity . "' AND network='" . $user_network . "'");
 
@@ -248,7 +221,7 @@ switch ($_GET['network']) {
 
         break;
 
-
+/* Авторизация через Вконтакте */
     case "vk":
 
         $redirect_url = "http://life.seazo.net/auth?network=vk";
@@ -259,7 +232,6 @@ switch ($_GET['network']) {
 
             $code = $_GET['code'];
 
-            //echo "blah";
             $url = "https://api.vkontakte.ru/oauth/access_token?client_id=3068957&client_secret=I9w2idSw5G7gczlEGS7M&code=" . $code;
             $response = json_decode(@file_get_contents($url));
             if ($response->error) {
@@ -269,6 +241,7 @@ switch ($_GET['network']) {
 
             var_dump($arrResponse);
 
+            /* Проверка пользователя в базе */
 
             $user_network = "vkontakte";
 
@@ -282,12 +255,13 @@ switch ($_GET['network']) {
             header("Location: http://oauth.vk.com/authorize?client_id=3068957&scope=&redirect_uri=" . $redirect_url . "&response_type=code");
             die;
         }
-
+ /* ----------------------------------------------- */
         break;
 
+        /* Авторизация через Одноклассники*/
     case "ok":
 
-
+//После помещения на рабочий сервер и когда приложение пройдёт модерацию ввести данные
 
         $AUTH['client_id'] = 'ID ПРИЛОЖЕНИЯ';
         $AUTH['client_secret'] = 'СЕКРЕТ ПРИЛОЖЕНИЯ';
@@ -322,7 +296,7 @@ switch ($_GET['network']) {
               ...
              */
 
-            header('Location: /index.html#add'); // редиректим после авторизации на главную страницу
+            header('Location: /index.html#add'); // редиректим после авторизации на главную страницу добавления
         } else {
             header('Location: http://www.odnoklassniki.ru/oauth/authorize?client_id=' . $AUTH['client_id'] . '&scope=VALUABLE ACCESS&response_type=code&redirect_uri=' . urlencode($HOST . 'auth.php?name=odnoklassniki'));
         }
