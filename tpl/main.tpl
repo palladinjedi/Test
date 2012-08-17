@@ -22,50 +22,6 @@
         </script>
         <script>
 
-            var oauth, options;
-
-            options = {
-            enablePrivilege: false,
-            consumerKey: 'uG2BQMcu0VXTOJ7Exv7zA',
-            consumerSecret: 'W9qN57LxvrKLvULDLW9CBZ1W2alCFeC42R4Cqdv4u8',
-            requestTokenUrl: "https://api.twitter.com/oauth/request_token",
-            authorizationUrl: "https://api.twitter.com/oauth/authorize",
-            accessTokenUrl: "https://api.twitter.com/oauth/access_token",
-            callbackUrl:"http://life.seazo.net/auth=twitter"
-        };
-        oauth.fetchRequestToken(openAuthoriseWindow, failureHandler);
-        function openAuthoriseWindow(url)
-        {
-        var wnd = window.open(url, 'authorise');
-        setTimeout(waitForPin, 100);
-
-        function waitForPin()
-            {
-            if (wnd.closed)
-                {
-                    var pin = prompt("Please enter your PIN", "");
-                oauth.setVerifier(pin);
-                oauth.fetchAccessToken(getSomeData, failureHandler);
-            }
-            else
-                {
-                setTimeout(waitForPin, 100);
-        }
-    }
-}
-
-function getSomeData()
-        {
-oauth.get("https://api.example.com/oauth/something/?format=json", function (data) {
-console.log(data.text);
-}, failureHandler);
-}
-
-function failureHandler(data)
-        {
-console.error(data);
-}
-
 
 function dump(obj) {
 var out = "";
@@ -78,23 +34,6 @@ out = obj;
 }
 alert(out);
 }
-
-function fbauth(){
-/** Перенаправляем на страницу авторизации Fb */
-location.href = 'https://www.facebook.com/dialog/oauth?client_id=143371715757895&redirect_uri=http://life.seazo.net';
-}
-
-function vkauth(){
-/** Перенаправляем на страницу авторизации ВКонтакте */
-location.href = 'http://api.vk.com/oauth/authorize?client_id=3068957&redirect_uri=http://life.seazo.net&display=page';
-}
-function twauth(){
-/** Авторизация через Twitter */
-
-
-
-}
-
 
 
         </script>
@@ -109,27 +48,7 @@ js.src = "//connect.facebook.net/ru_RU/all.js#xfbml=1";
 fjs.parentNode.insertBefore(js, fjs);
 }(document, 'script', 'facebook-jssdk'));</script>
 
-        <script type="text/javascript">
-
-var _gaq = _gaq || [];
-_gaq.push(['_setAccount', 'UA-28999005-8']);
-_gaq.push(['_addOrganic', 'Rambler', 'query']);
-_gaq.push(['_addOrganic', 'Mail', 'q']);
-_gaq.push(['_addOrganic', 'Nigma', 'q']);
-_gaq.push(['_addOrganic', 'Webalta', 'q']);
-_gaq.push(['_addOrganic', 'Aport', 'r']);
-_gaq.push(['_addOrganic', 'Gogo', 'q']);
-_gaq.push(['_addOrganic', 'Bing', 'q']);
-_gaq.push(['_addOrganic', 'QIP', 'query']);
-_gaq.push(['_trackPageview']);
-
-(function() {
-var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-})();
-
-        </script>
+        
 
     </head>
     <body>

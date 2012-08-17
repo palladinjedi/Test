@@ -98,9 +98,9 @@ function initPopup(){
 		$('.popup-holder.add-legend').fadeIn(300);
 		return false
 	})
-	$('.popup').click(function(e){
+	/*$('.popup').click(function(e){
 		return false;
-	})
+	})*/
 	$('.popup .close').click(function(e){
 		$(this).parents('.popup-holder').fadeOut(300);
 		return false;

@@ -64,6 +64,10 @@ if (!isset($configuration_file)) {
     $page = explode('/', $page);
 }
 
+
+
+
+
 /* if($_POST['token']!='') $uid = $Auth ->AuthULogin($_POST['token']);
   else die('no token'); */
 
@@ -142,11 +146,16 @@ switch ($_GET['network']) {
 
                 if ((int) $uid[0]['uid'] == 0)
                     die('<script>alert("Произошла ошибка. Мы не смогли получить данные вашей учетной записи."); window.location = "' . $config['path_www'] . 'legend/AllByDate.html#login";</script>');
-                else
-                    return (int) $uid[0]['uid'];
+                else {
+                    //return (int) $uid[0]['uid'];
+
+                    $_SESSION['uid'] = (int) $uid[0]['uid'];
+                }
 
                 /* ----------------------------------------------- */
                 unset($user);
+
+                header("Location: /index.html#add");
             }
         } else {
             //echo("The state does not match. You may be a victim of CSRF.");
@@ -155,12 +164,12 @@ switch ($_GET['network']) {
         break;
 
 
-        /* Авторизация через Twitter */
+    /* Авторизация через Twitter */
     case "twitter":
 
         require_once('./modules/auth/twitteroauth/twitteroauth.php');
         require_once('./modules/auth/twitteroauth/tw-config.php');
-        
+
         function getConnectionWithAccessToken($oauth_token, $oauth_token_secret) {
 
             $connection = new TwitterOAuth('uG2BQMcu0VXTOJ7Exv7zA', 'W9qN57LxvrKLvULDLW9CBZ1W2alCFeC42R4Cqdv4u8', $oauth_token, $oauth_token_secret);
@@ -182,7 +191,7 @@ switch ($_GET['network']) {
 
         $user['first_name'] = $user[0];
         $user['last_name'] = $user[1];
-        
+
         /* Проверка пользователя в базе */
 
         $uid = $DB->GetValues($config['dbprefix'] . 'user', 'uid, ban', "identity='" . $identity . "' AND network='" . $user_network . "'");
@@ -213,15 +222,17 @@ switch ($_GET['network']) {
 
             if ((int) $uid[0]['uid'] == 0)
                 die('<script>alert("Произошла ошибка. Мы не смогли получить данные вашей учетной записи."); window.location = "' . $config['path_www'] . 'legend/AllByDate.html#login";</script>');
-            else
-                return (int) $uid[0]['uid'];
+            else {
+                //return (int) $uid[0]['uid'];
+                $_SESSION['uid'] = (int) $uid[0]['uid'];
+            }
         }
         /* ----------------------------------------------- */
 
 
         break;
 
-/* Авторизация через Вконтакте */
+    /* Авторизация через Вконтакте */
     case "vk":
 
         $redirect_url = "http://life.seazo.net/auth?network=vk";
@@ -245,105 +256,145 @@ switch ($_GET['network']) {
 
             $user_network = "vkontakte";
 
-            $identity = "https://twitter.com/" . $content->url;
+            $identity = "http://vk.com/" . $arrResponse[0]->screen_name;
 
-            $user = explode(" ", iconv("UTF-8", "WINDOWS-1251", trim(strip_tags($content->name))));
+            //var_dump($arrResponse[0]->screen_name);
 
-            $user['first_name'] = $user[0];
-            $user['last_name'] = $user[1];
-        } else {
-            header("Location: http://oauth.vk.com/authorize?client_id=3068957&scope=&redirect_uri=" . $redirect_url . "&response_type=code");
-            die;
-        }
- /* ----------------------------------------------- */
-        break;
 
-        /* Авторизация через Одноклассники*/
-    case "ok":
+
+            $user['first_name'] = iconv("UTF-8", "WINDOWS-1251", trim(strip_tags($arrResponse[0]->first_name)));
+            $user['last_name'] = iconv("UTF-8", "WINDOWS-1251", trim(strip_tags($arrResponse[0]->last_name)));
+
+            
+            $uid = $DB->GetValues($config['dbprefix'] . 'user', 'uid, ban', "identity='" . $identity . "' AND network='" . $user_network . "'");
+
+            if (count($uid) == 0) {
+                $timest = time();
+
+
+
+                if ($user['first_name'] != '' AND $user['last_name'] != '')
+                    $DB->Insert($config['dbprefix'] . 'user', "'', '" . $user_network . "', '" . $identity . "', '" . $user->email . "', '" . $user['first_name'] . "', '" . $user['last_name'] . "', 0, " . $timest . ", '" . $ip . "'");
+                else
+                    die('<script>alert("Произошла ошибка. Проверьте правильность введённых данных (Имя и Фамилия)."); window.location = "' . $config['path_www'] . 'legend/AllByDate.html#login";</script>');
+
+                $uid = $DB->GetValues($config['dbprefix'] . 'user', 'uid', "identity='" . $identity . "' AND network='" . $user_network . "' AND timest='" . (int) $timest . "' AND last_ip='" . $ip . "'", '', 'uid', 'DESC');
+
+                if ((int) $uid[0]['uid'] == 0)
+                    die('<script>alert("Произошла ошибка. Мы не смогли создать вашу учетную запись."); window.location = "' . $config['path_www'] . 'legend/AllByDate.html#login";</script>');
+            }
+            else {
+
+                $DB->Update($config['dbprefix'] . 'user', "last_ip='" . $ip . "'", "uid=" . (int) $uid[0]['uid']);
+            }
+
+
+                /* if ($uid[0]['ban'] == TRUE)
+                  return FALSE; */
+
+                if ((int) $uid[0]['uid'] == 0)
+                    die('<script>alert("Произошла ошибка. Мы не смогли получить данные вашей учетной записи."); window.location = "' . $config['path_www'] . 'legend/AllByDate.html#login";</script>');
+                else {
+                    //return (int) $uid[0]['uid'];
+                    $_SESSION['uid'] = (int) $uid[0]['uid'];
+                }
+                /* -------------------------------------- */
+            } else {
+                header("Location: http://oauth.vk.com/authorize?client_id=3068957&scope=&redirect_uri=" . $redirect_url . "&response_type=code");
+                die;
+            }
+
+            /* ----------------------------------------------- */
+            break;
+
+            /* Авторизация через Одноклассники */
+            case "ok":
 
 //После помещения на рабочий сервер и когда приложение пройдёт модерацию ввести данные
 
-        $AUTH['client_id'] = 'ID ПРИЛОЖЕНИЯ';
-        $AUTH['client_secret'] = 'СЕКРЕТ ПРИЛОЖЕНИЯ';
-        $AUTH['application_key'] = 'КЛЮЧ ПРИЛОЖЕНИЯ';
-        if (isset($_GET['code'])) {
-            $curl = curl_init('http://api.odnoklassniki.ru/oauth/token.do');
-            curl_setopt($curl, CURLOPT_POST, 1);
-            curl_setopt($curl, CURLOPT_POSTFIELDS, 'code=' . $_GET['code'] . '&redirect_uri=' . urlencode("http://life.seazo.net/auth?network=ok") . '&grant_type=authorization_code&client_id=' . $AUTH['client_id'] . '&client_secret=' . $AUTH['client_secret']);
-            curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
-            $s = curl_exec($curl);
-            curl_close($curl);
-            $auth = json_decode($s, true);
-            $curl = curl_init('http://api.odnoklassniki.ru/fb.do?access_token=' . $auth['access_token'] . '&application_key=' . $AUTH['application_key'] . '&method=users.getCurrentUser&sig=' . md5('application_key=' . $AUTH['application_key'] . 'method=users.getCurrentUser' . md5($auth['access_token'] . $AUTH['client_secret'])));
-            curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
-            $s = curl_exec($curl);
-            curl_close($curl);
-            $user = json_decode($s, true);
-            /*
-              Массив $user содержит следующие поля:
-              uid - уникальный номер пользователя
-              first_name - имя пользователя
-              last_name - фамилия пользователя
-              birthday - дата рождения пользователя
-              gender - пол пользователя
-              pic_1 - маленькое фото
-              pic_2 - большое фото
-             */
+            $AUTH['client_id'] = 'ID ПРИЛОЖЕНИЯ';
+            $AUTH['client_secret'] = 'СЕКРЕТ ПРИЛОЖЕНИЯ';
+            $AUTH['application_key'] = 'КЛЮЧ ПРИЛОЖЕНИЯ';
+            if (isset($_GET['code'])) {
+                $curl = curl_init('http://api.odnoklassniki.ru/oauth/token.do');
+                curl_setopt($curl, CURLOPT_POST, 1);
+                curl_setopt($curl, CURLOPT_POSTFIELDS, 'code=' . $_GET['code'] . '&redirect_uri=' . urlencode("http://life.seazo.net/auth?network=ok") . '&grant_type=authorization_code&client_id=' . $AUTH['client_id'] . '&client_secret=' . $AUTH['client_secret']);
+                curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+                $s = curl_exec($curl);
+                curl_close($curl);
+                $auth = json_decode($s, true);
+                $curl = curl_init('http://api.odnoklassniki.ru/fb.do?access_token=' . $auth['access_token'] . '&application_key=' . $AUTH['application_key'] . '&method=users.getCurrentUser&sig=' . md5('application_key=' . $AUTH['application_key'] . 'method=users.getCurrentUser' . md5($auth['access_token'] . $AUTH['client_secret'])));
+                curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+                $s = curl_exec($curl);
+                curl_close($curl);
+                $user = json_decode($s, true);
+                /*
+                  Массив $user содержит следующие поля:
+                  uid - уникальный номер пользователя
+                  first_name - имя пользователя
+                  last_name - фамилия пользователя
+                  birthday - дата рождения пользователя
+                  gender - пол пользователя
+                  pic_1 - маленькое фото
+                  pic_2 - большое фото
+                 */
 
-            /*
-              ...
-              Записываем полученные данные в базу, устанавливаем cookies
-              ...
-             */
+                /*
+                  ...
+                  Записываем полученные данные в базу, устанавливаем cookies
+                  ...
+                 */
 
-            header('Location: /index.html#add'); // редиректим после авторизации на главную страницу добавления
-        } else {
-            header('Location: http://www.odnoklassniki.ru/oauth/authorize?client_id=' . $AUTH['client_id'] . '&scope=VALUABLE ACCESS&response_type=code&redirect_uri=' . urlencode($HOST . 'auth.php?name=odnoklassniki'));
+                header('Location: /index.html#add'); // редиректим после авторизации на главную страницу добавления
+            } else {
+                header('Location: http://www.odnoklassniki.ru/oauth/authorize?client_id=' . $AUTH['client_id'] . '&scope=VALUABLE ACCESS&response_type=code&redirect_uri=' . urlencode($HOST . 'auth.php?name=odnoklassniki'));
+            }
+
+
+            break;
+
+            default:
+            break;
         }
-
-
-        break;
-
-    default:
-        break;
-}
 //var_dump($array_user);
 //$user = $Auth->GetUserInfo((int) $uid);
 
-$_SESSION['uid'] = $user['uid'];
+        if (!isset($_SESSION['uid'])) {
+            $_SESSION['uid'] = $user['uid'];
+        }
 
-if ($page[1] == '' OR $page[1] == 'index.html') {
+        if ($page[1] == '' OR $page[1] == 'index.html') {
 
-    header('Location: ' . $config['path_www'] . 'index.html#add');
-} elseif ($page[1] == 'about') {
+            header('Location: ' . $config['path_www'] . 'index.html#add');
+        } elseif ($page[1] == 'about') {
 
-    header('Location: ' . $config['path_www'] . 'about/index.html#add');
-} elseif ($page[1] == 'legend' AND $_SESSION['from'] != 'vote') {
+            header('Location: ' . $config['path_www'] . 'about/index.html#add');
+        } elseif ($page[1] == 'legend' AND $_SESSION['from'] != 'vote') {
 
-    header('Location: ' . $config['path_www'] . 'legend/' . $page[2] . '#add');
-} elseif ($page[1] == 'legend' AND $_SESSION['from'] == 'vote') {
+            header('Location: ' . $config['path_www'] . 'legend/' . $page[2] . '#add');
+        } elseif ($page[1] == 'legend' AND $_SESSION['from'] == 'vote') {
 
-    header('Location: ' . $config['path_www'] . 'legend/' . $page[2]);
-} elseif ($page[1] == 'admin') {
+            header('Location: ' . $config['path_www'] . 'legend/' . $page[2]);
+        } elseif ($page[1] == 'admin') {
 
-    header('Location: ' . $config['path_www'] . 'admin/#add');
-} else {
+            header('Location: ' . $config['path_www'] . 'admin/#add');
+        } else {
 
-    header('Location: ' . $config['path_www'] . 'index.html#add');
-}
-
-
+            header('Location: ' . $config['path_www'] . 'index.html#add');
+        }
 
 
-$var[] = 'CONTENT';
-$con[] = $output;
 
-$var[] = 'TITLE';
-$con[] = '';
 
-$var[] = 'DESCRIPTION';
-$con[] = '';
+        $var[] = 'CONTENT';
+        $con[] = $output;
 
-$var[] = 'KEYWORDS';
-$con[] = '';
+        $var[] = 'TITLE';
+        $con[] = '';
+
+        $var[] = 'DESCRIPTION';
+        $con[] = '';
+
+        $var[] = 'KEYWORDS';
+        $con[] = '';
 ?>
