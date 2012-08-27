@@ -178,6 +178,10 @@ $TEMPLATES_MAIN->template_set('SUM_SCORE_NIGHT', (int)$score_night);
 
 $TEMPLATES_MAIN->template_set('PATH', $config['path_www']);
 
+var_dump($_SESSION);
+var_dump($user);
+var_dump($uid);
+
 print $TEMPLATES_MAIN->template_show();             
 
 ?>

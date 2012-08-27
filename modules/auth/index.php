@@ -250,7 +250,7 @@ switch ($_GET['network']) {
             }
             $arrResponse = json_decode(@file_get_contents("https://api.vkontakte.ru/method/getProfiles?uid={$response->user_id}&access_token={$response->access_token}&fields=nickname,screen_name,contacts"))->response;
 
-            var_dump($arrResponse);
+            //var_dump($arrResponse);
 
             /* Проверка пользователя в базе */
 

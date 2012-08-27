@@ -19,8 +19,9 @@
                 <li>-->
                     <!--<div onclick="twauth();" >Вход через Tw</div>-->
                     <a href="/auth?network=twitter" target="_parent">Twitter</a>
-                <!--</li>
-            </ul>-->
+                <!--</li>-->
+                    <!--<a href="/auth?network=ok" target="_parent">-->Одноклассники<!--</a>-->
+            <!--</ul>-->
             <div class="row">
                 <!-- 	<a href="#" class="btn01"><span>Войти!</span></a> -->
             </div>
